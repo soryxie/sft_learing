@@ -79,11 +79,16 @@ parser = HfArgumentParser(ScriptArguments)
 script_args = parser.parse_args_into_dataclasses()[0]
 
 # Step 1: Load the model
-if script_args.load_in_8bit and script_args.load_in_4bit:
-    raise ValueError("You can't load the model in 8 bits and 4 bits at the same time")
-elif script_args.load_in_8bit or script_args.load_in_4bit:
-    quantization_config = BitsAndBytesConfig(
-        load_in_8bit=script_args.load_in_8bit, load_in_4bit=script_args.load_in_4bit
+# if script_args.load_in_8bit and script_args.load_in_4bit:
+#     raise ValueError("You can't load the model in 8 bits and 4 bits at the same time")
+# elif script_args.load_in_8bit or script_args.load_in_4bit:
+if script_args.load_in_4bit:
+    compute_dtype = getattr(torch, "float16")
+    quantization_config = quant_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=compute_dtype,
+        bnb_4bit_use_double_quant=False,
     )
     # Copy the model to each device
     device_map = (
